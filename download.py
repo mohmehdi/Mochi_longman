@@ -7,15 +7,6 @@ import enchant
 # from traceback import print_tb
 # import snowballstemmer
 
-def bordered(text):
-    lines = text.splitlines()
-    width = max(len(s) for s in lines)
-    res = ['+ ' + '-' * width + ' +']
-    for s in lines:
-        res.append('| ' + (s + ' ' * width)[:width] + ' |')
-    res.append('+ ' + '-' * width + ' +')
-    return '\n'.join(res)
-
 class style():
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -28,14 +19,21 @@ class style():
     UNDERLINE = '\033[4m'
     RESET = '\033[0m'
 
+
+def bordered(text):
+    lines = text.splitlines()
+    width = max(len(s) for s in lines)
+    res = ['+ ' + '-' * width + ' +']
+    for s in lines:
+        res.append('| ' + (s + ' ' * width)[:width] + ' |')
+    res.append('+ ' + '-' * width + ' +')
+    return '\n'.join(res)
+
+def join_numbered_list(list_of_str):
+    return "\n".join((f"{item[0]} {item[1]}" for item in  list(zip([f"({index})" for index in range(len(list_of_str))],list_of_str))))
+
+
 def make_flashcard(word,out_path):
-    d = enchant.Dict("en_US")
-    if d.check(word)==False:
-        print(style.RED)
-        print("Did you mean:")
-        print(style.CYAN)
-        [print(f"\t{w}") for w in d.suggest(word)]
-        return
 
     # headers is to fake the identity . some websites can detect we are scraping
     headers = { 'User-Agent': 'Mozilla/5.0 (Windows NT 6.0; WOW64; rv:24.0) Gecko/20100101 Firefox/24.0' }
@@ -45,7 +43,7 @@ def make_flashcard(word,out_path):
     soup = bs(page.content,features="lxml")
 
     if soup.find(class_="pagetitle") is None:
-        print(style.RED + f"could't find the word\ntrying words base form instead")
+        print(style.RED + f"could't find the word\ntry the word's base form instead")
         return
 
     title= soup.find(class_="pagetitle").text
@@ -102,6 +100,8 @@ def make_flashcard(word,out_path):
 
 
 out_path = "data\\default"
+dic = enchant.Dict("en_US")
+
 while(True):
     print(style.WHITE+
     """
@@ -121,8 +121,21 @@ while(True):
 
     elif option == 1:
         print(style.WHITE)
-        input_word = input("enter new word:\n")
-        make_flashcard(input_word,out_path)
+        input_word = input("enter new word:\n").strip().lower()
+        if dic.check(input_word)==False:
+            print(style.RED+"Did you mean:")
+            print(style.CYAN)
+            suggestions = [f"{w}" for w in dic.suggest(input_word)]
+            print(bordered(join_numbered_list(suggestions)))
+            
+            print(style.YELLOW)
+            choice = input("Select a number or Enter to continue ")
+            if choice.isnumeric() and int(eval(choice))<len(suggestions):
+                make_flashcard(suggestions[int(eval(choice))].lower(),out_path)
+            else:
+                continue  
+        else:      
+            make_flashcard(input_word,out_path)
     
     elif option == 2:
         print(style.YELLOW)
@@ -135,7 +148,7 @@ while(True):
     elif option == 3:
         print(style.YELLOW)
         dirs = [file for file in os.listdir("data")]
-        items = "\n".join((f"{item[0]} {item[1]}" for item in  list(zip([f"({index})" for index in range(len(dirs))],dirs))))
+        items = join_numbered_list(dirs)
 
         print(bordered(items))
         print(style.CYAN)

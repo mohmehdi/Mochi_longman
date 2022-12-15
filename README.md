@@ -13,7 +13,7 @@ A simple python script to retrieve words from Longman dictionary and turn them i
 
 
 ### How to install  
-pip these:  
+pip these after activating venv:  
 ```
 pip install pyenchant
 

@@ -23,14 +23,19 @@ pip install requests
 
 pip install lxml
 ```
-### How to use  
 
+### How to use  
 the script saves all flashcards on `data\default`  
 - run `run.bat`
 - choose to add a new word 
 - import the flashcards from mochi as markdown
 
-#### Note: sequence for each word is 
+### Note
+if `run.bat` didn't work simply change the path to your git bash
+```sh
+start "" "C:\Program Files\Git\git-bash.exe" -c "./run.sh"
+```
+#### sequence for each word is 
 - word
 - pronunciation
 - examples

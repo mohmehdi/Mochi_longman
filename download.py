@@ -45,24 +45,20 @@ def make_flashcard(word,out_path):
     soup = bs(page.content,features="lxml")
 
     if soup.find(class_="pagetitle") is None:
-        # stemmer = snowballstemmer.stemmer("english")
-        # print(stemmer.stemWord(word))
         print(style.RED + f"could't find the word\ntrying words base form instead")
         return
-        # print(f"could't find the word\ntrying to find << {stemmer.stemWords(word)} >>  instead")
-        # url = 'https://www.ldoceonline.com/dictionary/' + stemmer.stemWords(word)
-        # page = requests.get(url,headers=headers)
-        # soup = bs(page.content,features="lxml")
-        # if soup.find(class_="pagetitle") is None:
-            # print(f"could't find the word")
-            # return
-    # print(soap)
+
     title= soup.find(class_="pagetitle").text
 
     #bre for british insted of amefile -> brefile
     sound = soup.find(class_='speaker amefile fas fa-volume-up hideOnAmp')
+    
+    sound_link = ""
+    if sound != None: 
+        sound_link = sound['data-src-mp3'].split('?')[0]
+    else:
+        print(style.RED+"Sound not found")
 
-    sound_link = sound['data-src-mp3'].split('?')[0]
     #![s](https://www.ldoceonline.com/media/english/ameProns/synthetic.mp3)
 
     meanings= soup.find_all(class_="Sense")
@@ -114,7 +110,12 @@ while(True):
     (2) List of words 
     (3) Change Folder 
     """)
-    option = eval(input())
+    option = input().strip()
+    if not option.isnumeric():
+        print(style.RED+"Enter a number")
+        continue
+    
+    option = eval(option)
     if option == 0:
         break
 
@@ -147,5 +148,6 @@ while(True):
                 out_path = "data\\"+dirs[index]
         else:
             out_path = "data\\"+path
-
+    else:
+        print(style.RED+"Choose from options")
 

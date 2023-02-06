@@ -2,6 +2,8 @@ import os
 from bs4 import BeautifulSoup as bs
 import requests
 import enchant
+import vlc
+
 
 # import sys
 # from traceback import print_tb
@@ -54,6 +56,9 @@ def make_flashcard(word,out_path):
     sound_link = ""
     if sound != None: 
         sound_link = sound['data-src-mp3'].split('?')[0]
+        p = vlc.MediaPlayer(sound_link)
+        p.play()
+        
     else:
         print(style.RED+"Sound not found")
 
@@ -74,7 +79,9 @@ def make_flashcard(word,out_path):
 
         examples=[]
         for eg in item.find_all(class_="EXAMPLE"):
-            examples.append(eg.text.strip())
+            text = eg.text.strip()
+            eg_sound = eg.find(class_="speaker exafile fas fa-volume-up hideOnAmp")['data-src-mp3'].split('?')[0]
+            examples.append([text,eg_sound])
         Senses.append([deffinition,examples])
 
     #------------------------write----------------------
@@ -85,8 +92,9 @@ def make_flashcard(word,out_path):
     index = 1
     for sense in Senses:
         
-        for eg in sense[1]:
+        for eg,s in sense[1]:
             content+=f'- {eg}  \n'
+            content+=f'    ![sound]({s})\n---\n'
 
         content+=f'---\n### {str(index)+"." if len(Senses)>1 else ""}{sense[0]}  \n---\n'
         
@@ -97,6 +105,22 @@ def make_flashcard(word,out_path):
 
     flashcard_file.write(content)
     print(style.GREEN + f' << {word} >> added')
+    count = 0
+    while True:
+        print(style.YELLOW + f"\nWould you want an example ?({len(Senses[0][1])-count} remains) (y/n)")
+        choice = input().strip().lower()
+        if choice =='y':
+            if len(Senses[0][1])<=count:
+                return
+            eg_s = Senses[0][1][count]
+            print(style.GREEN + f"{eg_s[0]}")
+            p = vlc.MediaPlayer(eg_s[1])
+            p.play()
+            count+=1
+        else:
+            return
+
+
 
 
 out_path = "data\\default"

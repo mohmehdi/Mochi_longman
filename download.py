@@ -80,7 +80,11 @@ def make_flashcard(word,out_path):
         examples=[]
         for eg in item.find_all(class_="EXAMPLE"):
             text = eg.text.strip()
-            eg_sound = eg.find(class_="speaker exafile fas fa-volume-up hideOnAmp")['data-src-mp3'].split('?')[0]
+            eg_sound = eg.find(class_="speaker exafile fas fa-volume-up hideOnAmp")
+            if eg_sound == None:
+                examples.append([text,None])
+                continue
+            eg_sound=eg_sound['data-src-mp3'].split('?')[0]
             examples.append([text,eg_sound])
         Senses.append([deffinition,examples])
 
@@ -114,8 +118,9 @@ def make_flashcard(word,out_path):
                 return
             eg_s = Senses[0][1][count]
             print(style.GREEN + f"{eg_s[0]}")
-            p = vlc.MediaPlayer(eg_s[1])
-            p.play()
+            if eg_s[1] != None:    
+                p = vlc.MediaPlayer(eg_s[1])
+                p.play()
             count+=1
         else:
             return
